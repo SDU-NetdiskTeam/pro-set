@@ -1,0 +1,4 @@
+unoconv: Cannot find a suitable office installation on your system.
+ERROR: Please locate your office installation and send your feedback to:
+       http://github.com/dagwieers/unoconv/issues
+WARNING:root:Failed to running unoconv process.

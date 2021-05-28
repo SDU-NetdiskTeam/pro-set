@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Your ccnet conf dir
+export CCNET_CONF_DIR=
+# Your seafile conf dir
+export SEAFILE_CONF_DIR=
+
+# Your extra python path.
+export PYTHONPATH=$PYTHONPATH:
+
+pkill -f "python seafile_events.py --loglevel=debug"
+
+python seafile_events.py --loglevel=debug --logfile=events.log --reconnect

@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Created-By: 1.4.2 (Sun Microsystems Inc.)
+Class-Path: commons-codec-1.5.jar poi-excelant-3.9-20121203.jar commons-logging-1.1.jar poi-ooxml-3.9-20121203.jar dom4j-1.6.1.jar poi-ooxml-schemas-3.9-20121203.jar junit-3.8.1.jar poi-scratchpad-3.9-20121203.jar log4j-1.2.13.jar stax-api-1.0.1.jar poi-3.9-20121203.jar xmlbeans-2.3.0.jar poi-examples-3.9-20121203.jar
+Main-Class: ExtractText
