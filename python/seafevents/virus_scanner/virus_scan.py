@@ -1,6 +1,7 @@
 #coding: utf-8
 
 import os
+import string
 import tempfile
 import subprocess
 from seafobj import commit_mgr, fs_mgr, block_mgr
@@ -78,17 +79,17 @@ class VirusScan(object):
                 ret = self.scan_file_virus(scan_task.repo_id, fid, fpath)
 
                 if ret == 0:
-                    logger.debug('File %s virus scan by %s: OK.',
-                                  fpath, self.settings.scan_cmd)
+                    logger.debug(u'File %s virus scan by %s: OK.',
+                                 fpath.encode('utf-8'), self.settings.scan_cmd)
                     nvnum += 1
                 elif ret == 1:
-                    logger.info('File %s virus scan by %s: Found virus.',
-                                 fpath, self.settings.scan_cmd)
+                    logger.info(u'File %s virus scan by %s: Found virus.',
+                                fpath.encode('utf-8'), self.settings.scan_cmd)
                     vnum += 1
                     vrecords.append((scan_task.repo_id, scan_task.head_commit_id, fpath))
                 else:
-                    logger.debug('File %s virus scan by %s: Failed.',
-                                  fpath, self.settings.scan_cmd)
+                    logger.debug(u'File %s virus scan by %s: Failed, error code is %d.',
+                                  fpath.encode('utf-8'), self.settings.scan_cmd, ret)
                     nfailed += 1
 
             if nfailed == 0:
@@ -110,6 +111,7 @@ class VirusScan(object):
     def scan_file_virus(self, repo_id, file_id, file_path):
         try:
             tfd, tpath = tempfile.mkstemp()
+            logger.debug("Created temp file '%s' for file '%s'", tpath, file_path)
             seafile = fs_mgr.load_seafile(repo_id, 1, file_id)
             for blk_id in seafile.blocks:
                 os.write(tfd, block_mgr.load_block(repo_id, 1, blk_id))
