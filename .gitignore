@@ -6,6 +6,7 @@ seahub*.db
 local_settings.py
 local_settings*
 .DS_Store
+*.log
 
 .virtualenv
 .env
