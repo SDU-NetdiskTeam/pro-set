@@ -9,6 +9,7 @@ import subprocess
 logger = logging.getLogger(__name__)
 pyexec = None
 HAS_OFFICE_TOOLS = None
+HAS_OFFLINE_DOWNLOAD_TOOLS = None
 
 def find_in_path(prog):
     if 'win32' in sys.platform:
@@ -27,22 +28,29 @@ def find_in_path(prog):
 
     return None
 
-def check_office_tools():
-    return True
-    """Check if requried executables can be found in PATH. If not, error
-    and exit.
 
-    """
-    tools = [
-        'soffice',
-    ]
-
+def check_executables_in_path(tools: []):
     for prog in tools:
         if find_in_path(prog) is None:
             logging.debug("Can't find the %s executable in PATH\n" % prog)
             return False
 
     return True
+
+
+def check_office_tools():
+    return True
+    # Check if requried executables can be found in PATH. If not, error and exit.
+    return check_executables_in_path([
+        'soffice',
+    ])
+
+
+def check_offline_download_tools():
+    return check_executables_in_path([
+        'aria2c',
+    ])
+
 
 def check_python_uno():
     try:
@@ -76,12 +84,26 @@ def has_office_tools():
 
     return HAS_OFFICE_TOOLS
 
+
+def has_offline_download_tools():
+    global HAS_OFFLINE_DOWNLOAD_TOOLS
+    if HAS_OFFLINE_DOWNLOAD_TOOLS is None:
+        # if check_office_tools() and check_python_uno():
+        if check_offline_download_tools():
+            HAS_OFFLINE_DOWNLOAD_TOOLS = True
+        else:
+            HAS_OFFLINE_DOWNLOAD_TOOLS = False
+
+    return HAS_OFFLINE_DOWNLOAD_TOOLS
+
+
 def do_exit(code=0):
     logging.info('exit with code %s', code)
     # os._exit: Exit the process with status n, without calling cleanup handlers, flushing stdio buffers, etc
     # sys.exit: This is implemented by raising the SystemExit exception. So only kill the current thread.
     # we need to make sure that the process exits.
     os._exit(code)
+
 
 def write_pidfile(pidfile):
     pid = os.getpid()

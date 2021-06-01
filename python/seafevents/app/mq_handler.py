@@ -7,6 +7,7 @@ from seaserv import seafile_api
 import seafevents.events.handlers as events_handlers
 import seafevents.events_publisher.handlers as publisher_handlers
 import seafevents.statistics.handlers as stats_handlers
+import seafevents.offline_downloader.handlers as offline_download_handlers
 from seafevents.db import init_db_session_class
 
 logger = logging.getLogger(__name__)
@@ -66,6 +67,7 @@ def init_message_handlers(enable_audit):
     events_handlers.register_handlers(message_handler, enable_audit)
     stats_handlers.register_handlers(message_handler)
     publisher_handlers.register_handlers(message_handler)
+    # offline_download_handlers.register_handlers(message_handler)
 
 
 class EventsHandler(object):

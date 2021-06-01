@@ -43,10 +43,12 @@ from .statistics.db import get_file_ops_stats_by_day, get_user_activity_stats_by
 from .virus_scanner import get_virus_files, delete_virus_file, operate_virus_file, \
         get_virus_file_by_vid
 
+from .offline_downloader import get_offline_download_tasks_by_user, add_offline_download_record
+
 from .content_scanner.db import get_content_scan_results
 
 from .utils import has_office_tools
-from .utils.config import get_office_converter_conf
+from .utils.config import get_office_converter_conf, get_offline_download_conf
 from .tasks import IndexUpdater
 
 logger = logging.getLogger(__name__)
@@ -54,6 +56,11 @@ logger = logging.getLogger(__name__)
 def is_search_enabled(config):
     index_updater = IndexUpdater(config)
     return index_updater.is_enabled()
+
+def is_offline_download_enabled(config):
+    conf = get_offline_download_conf(config)
+
+    return conf.get('enabled', False)
 
 def is_office_converter_enabled(config):
     if not has_office_tools():

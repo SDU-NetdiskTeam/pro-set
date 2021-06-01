@@ -7,10 +7,10 @@ from seafevents.app.config import appconfig, load_config
 from seafevents.app.mq_handler import EventsHandler
 from seafevents.events_publisher.events_publisher import events_publisher
 from seafevents.utils.config import get_office_converter_conf
-from seafevents.utils import has_office_tools, get_config
+from seafevents.utils import has_office_tools, get_config, has_offline_download_tools
 from seafevents.tasks import IndexUpdater, SeahubEmailSender, LdapSyncer,\
         VirusScanner, Statistics, CountUserActivity, CountTrafficInfo, ContentScanner,\
-        WorkWinxinNoticeSender, FileUpdatesSender, RepoOldFileAutoDelScanner
+        WorkWinxinNoticeSender, FileUpdatesSender, RepoOldFileAutoDelScanner, OfflineDownloader
 
 if has_office_tools():
     from seafevents.office_converter import OfficeConverter
@@ -86,6 +86,10 @@ class BackgroundTasks(object):
         if has_office_tools():
             self._office_converter = OfficeConverter(get_office_converter_conf(self._app_config))
 
+        self._offline_downloader = None
+        if has_offline_download_tools():
+            self._offline_downloader = OfflineDownloader(config_file)
+
     def start(self):
         logging.info('Starting background tasks.')
 
@@ -135,3 +139,8 @@ class BackgroundTasks(object):
             self._repo_old_file_auto_del_scanner.start()
         else:
             logging.info('repo old file auto del scanner disabled')
+
+        if self._offline_downloader.is_enabled():
+            self._offline_downloader.start()
+        else:
+            logging.info('offline downloader disabled')

@@ -1,5 +1,5 @@
 #coding: utf-8
-
+import traceback
 from threading import Thread
 import queue
 from .scan_settings import logger
@@ -18,6 +18,7 @@ class Worker(Thread):
                     break
                 self.do_work(task)
             except Exception as e:
+                print(traceback.format_exc())
                 logger.warning('Failed to execute task: %s' % e)
             finally:
                 self.task_queue.task_done()

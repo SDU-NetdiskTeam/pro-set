@@ -3,7 +3,8 @@ import logging
 import configparser
 import tempfile
 
-from seafevents.utils import has_office_tools
+from seafevents.utils import has_office_tools, has_offline_download_tools
+
 
 def parse_workers(workers, default_workers):
     try:
@@ -86,8 +87,80 @@ def parse_interval(interval, default):
     else:
         return val
 
+
+def get_offline_download_conf(config):
+    '''Parse offline download options from seafevents.conf'''
+    if not has_offline_download_tools():
+        logging.debug('offline downloader is not enabled because Aria2 is not found')
+        return dict(enabled=False)
+
+    section_name = 'OFFLINE DOWNLOAD'
+    key_enabled = 'enabled'
+
+    key_tempdir = 'tempdir'
+    default_tempdir = os.path.join(tempfile.gettempdir(), 'seafile-office-output')
+
+    key_workers = 'workers'
+    default_workers = 10
+
+    key_max_size = 'max-size'
+    default_max_size = 500 * 1024 * 1024      # in byte, default is 500MB
+
+    d = {'enabled': False}
+    if not config.has_section(section_name):
+        return d
+
+    def get_option(key, default=None):
+        try:
+            value = config.get(section_name, key)
+        except configparser.NoOptionError:
+            value = default
+
+        return value
+
+    enabled = get_option(key_enabled, default=False)
+    enabled = parse_bool(enabled)
+    d['enabled'] = enabled
+    logging.debug('offline download enabled: %s', enabled)
+    if not enabled:
+        return d
+
+    # [ outputdir ]
+    tempdir = get_option(key_tempdir, default=default_tempdir)
+
+    if not os.path.exists(tempdir):
+        try:
+            os.mkdir(tempdir)
+        except Exception as e:
+            logging.error(e)
+
+    if not os.access(tempdir, os.R_OK):
+        logging.error('Permission Denied: %s is not readable' % tempdir)
+
+    if not os.access(tempdir, os.W_OK):
+        logging.error('Permission Denied: %s is not allowed to be written.' % tempdir)
+
+    # [ workers ]
+    workers = get_option(key_workers, default=default_workers)
+    workers = parse_workers(workers, default_workers)
+
+    # [ max_size ]
+    max_size = get_option(key_max_size, default=default_max_size)
+    if max_size != default_max_size:
+        max_size = parse_max_size(max_size, default=default_max_size)
+
+    logging.debug('offline download tempdir: %s', tempdir)
+    logging.debug('offline download workers: %s', workers)
+    logging.debug('offline download max size: %s MB', max_size / 1024 / 1024)
+
+    d['tempdir'] = tempdir
+    d['workers'] = workers
+    d['max-size'] = max_size
+    return d
+
+
 def get_office_converter_conf(config):
-    '''Parse search related options from events.conf'''
+    '''Parse search related options from seafevents.conf'''
 
     if not has_office_tools():
         logging.debug('office converter is not enabled because libreoffice or python-uno is not found')
