@@ -80,16 +80,16 @@ class VirusScan(object):
 
                 if ret == 0:
                     logger.debug(u'File %s virus scan by %s: OK.',
-                                 fpath.encode('utf-8'), self.settings.scan_cmd)
+                                 fpath, self.settings.scan_cmd)
                     nvnum += 1
                 elif ret == 1:
                     logger.info(u'File %s virus scan by %s: Found virus.',
-                                fpath.encode('utf-8'), self.settings.scan_cmd)
+                                fpath, self.settings.scan_cmd)
                     vnum += 1
                     vrecords.append((scan_task.repo_id, scan_task.head_commit_id, fpath))
                 else:
                     logger.debug(u'File %s virus scan by %s: Failed, error code is %d.',
-                                  fpath.encode('utf-8'), self.settings.scan_cmd, ret)
+                                  fpath, self.settings.scan_cmd, ret)
                     nfailed += 1
 
             if nfailed == 0:

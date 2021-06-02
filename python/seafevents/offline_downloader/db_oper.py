@@ -47,14 +47,48 @@ class DBOper(object):
         finally:
             session.close()
 
+    # When download success, the path will be set to file path.
+    def set_record_path(self, odr_id, path):
+        session: Session = self.edb_session()
+        try:
+            q = session.query(OfflineDownloadRecord).filter(OfflineDownloadRecord.odr_id == odr_id)
+            r = q.first()
+            if not r:
+                logger.error('No offline download record: %d.', odr_id)
+                return
+            else:
+                r.path = path
+                session.commit()
+        except Exception as e:
+            logger.warning('Failed to update offline download path from db: %s.', e)
+        finally:
+            session.close()
+
+    def get_record_comment(self, odr_id):
+        session: Session = self.edb_session()
+        try:
+            q: Query = session.query(OfflineDownloadRecord).filter(OfflineDownloadRecord.odr_id == odr_id)
+            r = q.first()
+            if not r:
+                logger.error('No offline download record: %d.', odr_id)
+                return -1
+            else:
+                return r.comment
+        except Exception as e:
+            logger.warning('Failed to get offline download comment from db: %s.', e)
+        finally:
+            session.close()
+
     def get_offline_download_tasks_by_status(self, status=OfflineDownloadStatus.WAITING):
         session: Session = self.edb_session()
         try:
             q: Query = session.query(OfflineDownloadRecord).filter(OfflineDownloadRecord.status == status)
             return q.all()
         except Exception as e:
-            logger.warning('Failed to get offline download tasks (%d) from db: %s.', status, e)
+            logger.warning('Failed to get offline download tasks (status = %d) from db: %s.', status, e)
             return None
+        finally:
+            session.close()
 
     def set_record_file_size(self, odr_id, size):
         session: Session = self.edb_session()
@@ -83,8 +117,25 @@ def add_offline_download_record(session: Session, repo_id, path, owner, url):
     except Exception as e:
         logger.error(e)
         return -1
-    finally:
-        session.close()
+
+
+def get_offline_download_tasks(session: Session, start, limit):
+    if start < 0:
+        logger.error('start must be non-negative')
+        raise RuntimeError('start must be non-negative')
+
+    if limit <= 0:
+        logger.error('limit must be positive')
+        raise RuntimeError('limit must be positive')
+
+    try:
+        q: Query = session.query(OfflineDownloadRecord)
+        q = q.order_by(desc(OfflineDownloadRecord.odr_id))
+        q = q.slice(start, start+limit)
+        return q.all()
+    except Exception as e:
+        logger.warning('Failed to get offline download tasks from db: %s.', e)
+        return None
 
 
 def get_offline_download_tasks_by_user(session: Session, user, start, limit):
@@ -117,8 +168,6 @@ def get_record_status(session: Session, odr_id):
             return r.status
     except Exception as e:
         logger.warning('Failed to get offline download status from db: %s.', e)
-    finally:
-        session.close()
 
 
 def get_record_comment(session: Session, odr_id):
@@ -132,8 +181,6 @@ def get_record_comment(session: Session, odr_id):
             return r.comment
     except Exception as e:
         logger.warning('Failed to get offline download comment from db: %s.', e)
-    finally:
-        session.close()
 
 
 def get_record_file_size(session: Session, odr_id):
@@ -147,5 +194,3 @@ def get_record_file_size(session: Session, odr_id):
             return r.size
     except Exception as e:
         logger.warning('Failed to get offline download file size from db: %s.', e)
-    finally:
-        session.close()

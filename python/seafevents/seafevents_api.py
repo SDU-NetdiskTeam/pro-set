@@ -13,7 +13,7 @@ def init(config_file):
         load_config(config_file)
 
 def is_pro():
-    return True
+    return False
 
 def get_file_history_suffix():
     if appconfig.fh.enabled is False:

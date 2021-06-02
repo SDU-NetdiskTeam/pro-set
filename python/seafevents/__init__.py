@@ -43,7 +43,8 @@ from .statistics.db import get_file_ops_stats_by_day, get_user_activity_stats_by
 from .virus_scanner import get_virus_files, delete_virus_file, operate_virus_file, \
         get_virus_file_by_vid
 
-from .offline_downloader import get_offline_download_tasks_by_user, add_offline_download_record
+from .offline_downloader import get_offline_download_tasks_by_user, add_offline_download_record, \
+    get_offline_download_tasks
 
 from .content_scanner.db import get_content_scan_results
 

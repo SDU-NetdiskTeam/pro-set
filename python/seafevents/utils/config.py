@@ -103,8 +103,8 @@ def get_offline_download_conf(config):
     key_workers = 'workers'
     default_workers = 10
 
-    key_max_size = 'max-size'
-    default_max_size = 500 * 1024 * 1024      # in byte, default is 500MB
+    key_time_limit = 'time-limit'
+    default_time_limit = 30 * 60      # in seconds, default is 30 minutes
 
     d = {'enabled': False}
     if not config.has_section(section_name):
@@ -145,17 +145,17 @@ def get_offline_download_conf(config):
     workers = parse_workers(workers, default_workers)
 
     # [ max_size ]
-    max_size = get_option(key_max_size, default=default_max_size)
-    if max_size != default_max_size:
-        max_size = parse_max_size(max_size, default=default_max_size)
+    time_limit = get_option(key_time_limit, default=default_time_limit)
+    if time_limit != default_time_limit:
+        time_limit = parse_interval(time_limit, default=default_time_limit)
 
     logging.debug('offline download tempdir: %s', tempdir)
     logging.debug('offline download workers: %s', workers)
-    logging.debug('offline download max size: %s MB', max_size / 1024 / 1024)
+    logging.debug('offline download time limit: %s seconds', time_limit)
 
     d['tempdir'] = tempdir
     d['workers'] = workers
-    d['max-size'] = max_size
+    d['time-limit'] = time_limit
     return d
 
 
@@ -178,8 +178,8 @@ def get_office_converter_conf(config):
     key_max_pages = 'max-pages'
     default_max_pages = 50
 
-    key_max_size = 'max-size'
-    default_max_size = 2 * 1024 * 1024
+    key_max_size = 'time-limit'
+    default_max_size = 30 * 60      # 30 minutes
 
     key_host = 'host'
     default_host = '127.0.0.1'
