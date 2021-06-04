@@ -1,0 +1,40 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          elasticsearch
+# Required-Start:    $all
+# Required-Stop:
+# Default-Start:     2 3 4
+# Default-Stop:
+# Short-Description: The Elasticsearch starter.
+### END INIT INFO
+ 
+case "$1" in
+start)
+    su es<<!
+    cd /home/es/elasticsearch
+    ./bin/elasticsearch -d
+!
+    echo "elasticsearch startup"
+    ;;  
+stop)
+    es_pid=`ps aux|grep elasticsearch | grep -v 'grep elasticsearch' | awk '{print $2}'`
+    kill -9 $es_pid
+    echo "elasticsearch stopped"
+    ;;  
+restart)
+    es_pid=`ps aux|grep elasticsearch | grep -v 'grep elasticsearch' | awk '{print $2}'`
+    kill -9 $es_pid
+    echo "elasticsearch stopped"
+    su es<<!
+    cd /home/es/elasticsearch
+    ./bin/elasticsearch -d
+!
+    echo "elasticsearch startup"
+    ;;  
+*)
+    echo "start|stop|restart"
+    ;;  
+esac
+ 
+exit $?
+
