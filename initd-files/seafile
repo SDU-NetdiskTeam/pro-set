@@ -9,7 +9,7 @@
 ### END INIT INFO
 
 export PYTHONPATH=/usr/local/lib/python3.6/site-packages/:/var/seafile/source/seahub/thirdpart:$PYTHONPATH
-export PYTHONPATH=/var/seafile/source:/var/seafile/source/pro/python:$PYTHONPATH
+export PYTHONPATH=/var/seafile/source:/var/seafile/source/pro/python:$CCNET_CONF_DIR:$PYTHONPATH
 
 export CCNET_CONF_DIR=/var/seafile/conf
 export SEAFILE_CONF_DIR=/var/seafile/seafile-data
@@ -20,7 +20,7 @@ export SEAHUB_LOG_DIR=/var/seafile/log
  
 case "$1" in
 start)
-    nohup seaf-server -c /var/seafile/conf -d /var/seafile/seafile-data -D all -f -l - >/var/seafile/log/seafile-server.log 2>&1 &
+    nohup seaf-server -c /var/seafile/conf -d /var/seafile/seafile-data -D all -f -l - >/var/seafile/log/seafile-server-std.log 2>/var/seafile/log/seafile-server-err.log &
     echo "Seafile-server startup"
 	
 	cd /var/seafile/source/pro/python/seafevents
@@ -28,30 +28,43 @@ start)
 	echo "Seaf-Events startup"
 	
 	cd /var/seafile/source/seahub/
-	nohup python manage.py runserver 0.0.0.0:8000 >/var/seafile/log/seahub-std.log 2>&1 &
+	nohup python manage.py runserver 0.0.0.0:8000 >/var/seafile/log/seahub-std.log 2>/var/seafile/log/seahub-err.log &
 	echo "Seahub startup"
+	
+	cd /var/seafile/source/seafdav/
+	nohup ./run.sh >/var/seafile/log/seafdav-std.log 2>/var/seafile/log/seafdav-err.log &
+	echo "Seafdav startup"
     ;;  
 stop)
     seahub_pid=`ps aux|grep 'python manage.py runserver' | grep -v 'grep' | awk '{print $2}'`
     kill -9 $seahub_pid
     echo "Seahub stopped"
 	
-	seafevents_pid=`ps aux|grep 'nohup ./run.sh >/dev/null' | grep -v 'grep' | awk '{print $2}'`
+	sefdav_pid=`ps aux|grep 'python -m wsgidav' | grep -v 'grep' | awk '{print $2}'`
+	kill -9 $sefdav_pid
+	echo "Seafdav stopped"
+	
+	seafevents_pid=`ps aux|grep 'seafile_events.py' | grep -v 'grep' | awk '{print $2}'`
     kill -9 $seafevents_pid
     echo "Seaf-Events stopped"
 	
 	seaf_server_pid=`ps aux|grep seaf-server | grep -v 'grep seaf-server' | awk '{print $2}'`
     kill -9 $seaf_server_pid
     echo "Seafile-server stopped"
+	
     ;;  
 restart)
     seahub_pid=`ps aux|grep 'python manage.py runserver' | grep -v 'grep' | awk '{print $2}'`
     kill -9 $seahub_pid
     echo "Seahub stopped"
 	
-	seafevents_pid=`ps aux|grep 'nohup ./run.sh >/dev/null' | grep -v 'grep' | awk '{print $2}'`
-    kill -9 $seafevents_pid
-    echo "Seaf-Events stopped"
+	sefdav_pid=`ps aux|grep 'python -m wsgidav' | grep -v 'grep' | awk '{print $2}'`
+	kill -9 $sefdav_pid
+	echo "Seafdav stopped"
+	
+	seafevents_pid=`ps aux|grep 'seafile_events.py' | grep -v 'grep' | awk '{print $2}'`
+	kill -9 $seafevents_pid
+	echo "Seaf-Events stopped"
 	
 	seaf_server_pid=`ps aux|grep seaf-server | grep -v 'grep seaf-server' | awk '{print $2}'`
     kill -9 $seaf_server_pid
@@ -67,8 +80,13 @@ restart)
 	cd /var/seafile/source/seahub/
 	nohup python manage.py runserver 0.0.0.0:8000 >/var/seafile/log/seahub-std.log 2>&1 &
 	echo "Seahub startup"
+	
+	cd /var/seafile/source/seafdav/
+	nohup ./run.sh >/var/seafile/log/seafdav-std.log 2>/var/seafile/log/seafdav-err.log &
+	echo "Seafdav startup"
     ;;  
 esac
  
 exit $?
 
+	
