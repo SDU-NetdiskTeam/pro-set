@@ -56,7 +56,7 @@ class RepoFilesIndex(SeafileIndexBase):
             },
             'is_dir': {
                 'type': 'boolean',
-                'index': False,
+                'index': True,
             },
             'mtime': {
                 'type': 'date',
